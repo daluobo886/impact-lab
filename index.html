@@ -148,7 +148,7 @@
       line-height: 1.5;
     }
 
-    /* 统计卡片样式：和输入区字体风格统一，居中排版 */
+    /* 统计卡片：字号统一为 12px */
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -169,14 +169,14 @@
       min-height: 70px;
     }
     .stat-label {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
       font-weight: 500;
       line-height: 1.35;
     }
     .stat-value {
       margin-top: 4px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--text-main);
       line-height: 1.35;
@@ -337,7 +337,7 @@
   </div>
 
   <script>
-    // 全局字体设置，让图表文字不要太大
+    // 全局字体设置
     Chart.defaults.font.family = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     Chart.defaults.font.size = 11;
     Chart.defaults.color = 'rgba(75,85,99,0.95)';
@@ -359,11 +359,9 @@
       }
     });
 
-    // charts
     let priceChart, volumeChart, impactCurveChart;
     function destroyChart(chart) { if (chart) chart.destroy(); }
 
-    // 多代理：直接 + corsproxy + allorigins
     async function fetchWithProxies(targetUrl) {
       const candidates = [
         targetUrl,
@@ -425,7 +423,6 @@
       const closes = items.map(d => d.close);
       const vols = items.map(d => d.volume);
 
-      // 波动率窗口：最近 60 日
       const N = Math.min(60, closes.length - 1);
       const returns = [];
       for (let i = closes.length - N; i < closes.length; i++) {
@@ -442,13 +439,11 @@
       const sigmaDaily = Math.sqrt(varR);
       const sigmaAnnual = sigmaDaily * Math.sqrt(252);
 
-      // 估算 Y：用 |r| 的均值 / σ，夹在 [0.3, 1.5] 区间
       let avgAbsR = returns.reduce((a, b) => a + Math.abs(b), 0) / returns.length;
       let yEstimated = (sigmaDaily > 0) ? avgAbsR / sigmaDaily : 0.7;
       if (!isFinite(yEstimated) || yEstimated <= 0) yEstimated = 0.7;
       yEstimated = Math.min(Math.max(yEstimated, 0.3), 1.5);
 
-      // ADV：最近 20 日平均成交量
       const advWindow = Math.min(20, vols.length);
       const volsTail = vols.slice(-advWindow);
       const adv = volsTail.reduce((a, b) => a + b, 0) / advWindow;
@@ -549,7 +544,6 @@
       const closesRecent = closes.slice(-recentN);
       const volsRecent = volumes.slice(-recentN);
 
-      // 价格图
       const priceCtx = document.getElementById('priceChart').getContext('2d');
       destroyChart(priceChart);
       priceChart = new Chart(priceCtx, {
@@ -581,7 +575,6 @@
         }
       });
 
-      // 成交量图
       const adv = metrics.adv;
       const advArray = new Array(volsRecent.length).fill(adv);
       const volumeCtx = document.getElementById('volumeChart').getContext('2d');
@@ -622,7 +615,6 @@
         }
       });
 
-      // Impact 曲线：Q 从 0.1×ADV 到 3×ADV
       const curveLabels = [];
       const curveData = [];
       const Q0 = metrics.adv;
@@ -684,7 +676,7 @@
         return;
       }
       if (!yInput || yInput <= 0) {
-        yInput = NaN; // 用 NaN 触发后面用估算值
+        yInput = NaN;
       }
 
       submitBtn.disabled = true;
@@ -694,7 +686,6 @@
         const data = await fetchYahoo(symbol);
         const metrics = computeMetrics(data);
 
-        // 把自动估算的 Y 写回输入框作为默认值（保留两位小数）
         if (!isFinite(Number(yInputEl.value)) || Number(yInputEl.value) <= 0) {
           yInputEl.value = metrics.yEstimated.toFixed(2);
         }
@@ -703,7 +694,6 @@
           ? Number(yInputEl.value)
           : metrics.yEstimated;
 
-        // 再统一保留两位小数
         yInputEl.value = actualY.toFixed(2);
 
         const impactResult = computeImpact(metrics, size, side, actualY);
