@@ -325,27 +325,43 @@
       }
     });
 
-    // Charts
+    // charts
     let priceChart, volumeChart, impactCurveChart;
+    function destroyChart(chart) { if (chart) chart.destroy(); }
 
-    function destroyChart(chart) {
-      if (chart) chart.destroy();
+    // 通用：按顺序尝试多个 URL（直接 + 两个代理）
+    async function fetchWithProxies(targetUrl) {
+      const candidates = [
+        targetUrl,
+        'https://corsproxy.io/?url=' + encodeURIComponent(targetUrl),
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl)
+      ];
+
+      let lastError = null;
+      for (const url of candidates) {
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) {
+            lastError = new Error('HTTP ' + resp.status + ' 获取失败');
+            continue;
+          }
+          return await resp.json();
+        } catch (err) {
+          lastError = err;
+          continue;
+        }
+      }
+      throw lastError || new Error('所有代理均获取失败');
     }
 
-    // 使用 corsproxy.io 解决 CORS
     async function fetchYahoo(symbol) {
       const target =
         'https://query1.finance.yahoo.com/v8/finance/chart/' +
         encodeURIComponent(symbol) +
         '?range=6mo&interval=1d&includePrePost=false&events=div,splits';
 
-      const url = 'https://corsproxy.io/?url=' + encodeURIComponent(target);
+      const json = await fetchWithProxies(target);
 
-      const resp = await fetch(url);
-      if (!resp.ok) {
-        throw new Error('HTTP ' + resp.status + ' 获取失败');
-      }
-      const json = await resp.json();
       if (!json.chart || json.chart.error || !json.chart.result || !json.chart.result[0]) {
         throw new Error(json.chart && json.chart.error ? json.chart.error.description : '没有可用行情数据');
       }
@@ -398,7 +414,6 @@
       const adv = volsTail.reduce((a, b) => a + b, 0) / advWindow;
 
       const last = items[items.length - 1];
-
       const yDefault = 0.7;
 
       return {
@@ -443,7 +458,7 @@
 
       const lastDateStr = metrics.lastDate.toISOString().slice(0, 10);
 
-      stockStats[0].textContent = formatNumber(metrics.lastPrice, 2) + ' （' + lastDateStr + '）';
+      stockStats[0].textContent = formatNumber(metrics.lastPrice, 2) + '（' + lastDateStr + '）';
       stockStats[1].textContent = formatNumber(metrics.lastVolume, 0);
       stockStats[2].textContent = formatNumber(metrics.adv, 0);
 
@@ -480,9 +495,7 @@
     }
 
     function renderCharts(metrics, impactResult) {
-      const labels = metrics.items.map(d =>
-        d.date.toISOString().slice(5, 10)
-      );
+      const labels = metrics.items.map(d => d.date.toISOString().slice(5, 10));
       const closes = metrics.items.map(d => d.close);
       const volumes = metrics.items.map(d => d.volume);
 
