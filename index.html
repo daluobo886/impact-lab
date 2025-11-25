@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Market Impact 预估实验室</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #111624;
+      --border: #262b3a;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59,130,246,0.1);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --success: #4ade80;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #111827 0, #020617 45%, #020617 100%);
+      color: var(--text-main);
+    }
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 24px;
+      margin: 0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+    }
+    header p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    .card {
+      background: radial-gradient(circle at top, #111827 0, #020617 60%);
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      padding: 18px 18px 16px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.4);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.8);
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.4);
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .row > div { flex: 1; }
+    .pill-toggle {
+      display: flex;
+      border-radius: 999px;
+      padding: 2px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .pill-toggle button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 5px 0;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .pill-toggle button.active {
+      background: var(--accent);
+      color: #f9fafb;
+    }
+    .btn-primary {
+      width: 100%;
+      margin-top: 6px;
+      border-radius: 999px;
+      border: none;
+      padding: 9px 0;
+      font-size: 13px;
+      font-weight: 500;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #f9fafb;
+      cursor: pointer;
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+    }
+    .stat {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: rgba(15,23,42,0.9);
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .stat-value {
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .stat-value.positive { color: var(--success); }
+    .stat-value.negative { color: var(--danger); }
+    .section-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      margin: 4px 0 4px;
+    }
+    .summary-line {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .summary-line strong {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 1100px) {
+      .charts-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    canvas {
+      width: 100% !important;
+      height: 260px !important;
+    }
+    .error {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--danger);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      background: rgba(34,197,94,0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(34,197,94,0.3);
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Impact Lab · YAHOO 数据终端</h1>
+        <p>输入股票代码 + 下单规模，基于 σ / ADV / Y 系数预估冲击与涨跌幅（示意用）</p>
+      </div>
+      <p>示例代码：AAPL · TSLA · 600036.SS · 000001.SZ</p>
+    </header>
+
+    <div class="grid">
+      <!-- 左侧：输入 / 结果 -->
+      <div class="card">
+        <h2>下单参数</h2>
+        <form id="impactForm">
+          <div class="row">
+            <div>
+              <label for="symbolInput">股票代码（Yahoo 格式）</label>
+              <input id="symbolInput" type="text" placeholder="例如：AAPL / 600036.SS" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>方向</label>
+              <div class="pill-toggle" id="sideToggle">
+                <button type="button" data-side="buy" class="active">买入 Buy</button>
+                <button type="button" data-side="sell">卖出 Sell</button>
+              </div>
+            </div>
+            <div>
+              <label for="sizeInput">下单股数 Q</label>
+              <input id="sizeInput" type="number" min="1" step="1" placeholder="例如：100000" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="yInput">Y 系数（经验冲击系数）</label>
+              <input id="yInput" type="number" step="0.1" min="0.1" max="3" value="0.7" />
+            </div>
+            <div>
+              <label>窗口设置</label>
+              <input type="text" value="波动率 60 日 · ADV 20 日 · Range=6mo" disabled />
+            </div>
+          </div>
+
+          <button class="btn-primary" type="submit" id="submitBtn">计算 Impact</button>
+          <div class="hint">
+            说明：Impact ≈ Y · σ(日) · √(Q / ADV)。结果为估算，不作为交易建议。
+          </div>
+          <div id="errorBox" class="error" style="display:none;"></div>
+        </form>
+
+        <div class="section-title">当前标的快照</div>
+        <div class="stat-grid" id="stockStats">
+          <div class="stat"><div class="stat-label">最新价</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">最新成交量</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">20 日均量（ADV）</div><div class="stat-value">-</div></div>
+        </div>
+
+        <div class="section-title">波动与参数</div>
+        <div class="stat-grid" id="volStats">
+          <div class="stat"><div class="stat-label">σ（日）</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">σ（年化）</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">Y 系数</div><div class="stat-value">-</div></div>
+        </div>
+
+        <div class="section-title">本次订单 Impact 预估</div>
+        <div class="stat-grid" id="impactStats">
+          <div class="stat"><div class="stat-label">参与率 r = Q / ADV</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">预估冲击幅度</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">预估成交价</div><div class="stat-value">-</div></div>
+        </div>
+
+        <div class="summary-line" id="summaryLine">
+          等待输入参数并计算…
+        </div>
+      </div>
+
+      <!-- 右侧：可视化 -->
+      <div class="card">
+        <h2>可视化面板<span class="badge">Experimental</span></h2>
+        <div class="charts-grid">
+          <div>
+            <div class="section-title">价格历史（最近 90 日）</div>
+            <canvas id="priceChart"></canvas>
+          </div>
+          <div>
+            <div class="section-title">成交量 & ADV</div>
+            <canvas id="volumeChart"></canvas>
+          </div>
+        </div>
+        <div class="section-title">Impact 曲线（不同 Q 下的冲击估算）</div>
+        <canvas id="impactCurveChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('impactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorBox = document.getElementById('errorBox');
+    const sideToggle = document.getElementById('sideToggle');
+
+    let side = 'buy';
+
+    sideToggle.addEventListener('click', (e) => {
+      if (e.target.tagName.toLowerCase() === 'button') {
+        side = e.target.dataset.side;
+        [...sideToggle.querySelectorAll('button')].forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.side === side);
+        });
+      }
+    });
+
+    // Charts
+    let priceChart, volumeChart, impactCurveChart;
+
+    function destroyChart(chart) {
+      if (chart) chart.destroy();
+    }
+
+    async function fetchYahoo(symbol) {
+      const url =
+        'https://query1.finance.yahoo.com/v8/finance/chart/' +
+        encodeURIComponent(symbol) +
+        '?range=6mo&interval=1d&includePrePost=false&events=div,splits';
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        throw new Error('HTTP ' + resp.status + ' 获取失败');
+      }
+      const json = await resp.json();
+      if (!json.chart || json.chart.error || !json.chart.result || !json.chart.result[0]) {
+        throw new Error(json.chart && json.chart.error ? json.chart.error.description : '没有可用行情数据');
+      }
+      const result = json.chart.result[0];
+      const timestamps = result.timestamp || [];
+      const quote = result.indicators.quote[0];
+      const closes = quote.close || [];
+      const volumes = quote.volume || [];
+
+      const items = [];
+      for (let i = 0; i < timestamps.length; i++) {
+        const c = closes[i];
+        const v = volumes[i];
+        if (c == null || v == null) continue;
+        const dt = new Date(timestamps[i] * 1000);
+        items.push({ date: dt, close: c, volume: v });
+      }
+      if (items.length < 30) {
+        throw new Error('历史数据太少，无法计算');
+      }
+      items.sort((a, b) => a.date - b.date);
+      return { items };
+    }
+
+    function computeMetrics(data) {
+      const items = data.items;
+      const closes = items.map(d => d.close);
+      const vols = items.map(d => d.volume);
+
+      // 波动率窗口：最近 60 日
+      const N = Math.min(60, closes.length - 1);
+      const returns = [];
+      for (let i = closes.length - N; i < closes.length; i++) {
+        const p = closes[i];
+        const pPrev = closes[i - 1];
+        if (p > 0 && pPrev > 0) {
+          returns.push(Math.log(p / pPrev));
+        }
+      }
+      const meanR = returns.reduce((a, b) => a + b, 0) / returns.length;
+      const varR =
+        returns.reduce((acc, r) => acc + Math.pow(r - meanR, 2), 0) /
+        Math.max(returns.length - 1, 1);
+      const sigmaDaily = Math.sqrt(varR);
+      const sigmaAnnual = sigmaDaily * Math.sqrt(252);
+
+      // ADV：最近 20 日平均成交量
+      const advWindow = Math.min(20, vols.length);
+      const volsTail = vols.slice(-advWindow);
+      const adv = volsTail.reduce((a, b) => a + b, 0) / advWindow;
+
+      const last = items[items.length - 1];
+
+      // 默认 Y 系数：0.7（你可以在页面上手动调整）
+      const yDefault = 0.7;
+
+      return {
+        items,
+        closes,
+        vols,
+        sigmaDaily,
+        sigmaAnnual,
+        adv,
+        lastPrice: last.close,
+        lastDate: last.date,
+        lastVolume: last.volume,
+        yDefault
+      };
+    }
+
+    function computeImpact(metrics, orderSize, side, yInput) {
+      const Q = orderSize;
+      const V = metrics.adv;
+      const r = Q / V;
+      const Y = yInput || metrics.yDefault;
+      // 经典平方根冲击：Impact ≈ Y · σ · √(Q/V)
+      const impact = Y * metrics.sigmaDaily * Math.sqrt(Q / V);
+      const sign = side === 'buy' ? 1 : -1;
+      const impactPct = impact * 100 * sign;
+      const expectedPrice = metrics.lastPrice * (1 + impact * sign);
+      return { Q, V, r, Y, impact, impactPct, expectedPrice, side };
+    }
+
+    function formatNumber(x, digits = 2) {
+      if (!isFinite(x)) return '-';
+      return x.toLocaleString('zh-CN', {
+        maximumFractionDigits: digits,
+        minimumFractionDigits: digits
+      });
+    }
+
+    function updateStats(metrics, impactResult) {
+      const stockStats = document.getElementById('stockStats').querySelectorAll('.stat-value');
+      const volStats = document.getElementById('volStats').querySelectorAll('.stat-value');
+      const impactStats = document.getElementById('impactStats').querySelectorAll('.stat-value');
+      const summaryLine = document.getElementById('summaryLine');
+
+      const lastDateStr = metrics.lastDate.toISOString().slice(0, 10);
+
+      stockStats[0].textContent = formatNumber(metrics.lastPrice, 2) + ' （' + lastDateStr + '）';
+      stockStats[1].textContent = formatNumber(metrics.lastVolume, 0);
+      stockStats[2].textContent = formatNumber(metrics.adv, 0);
+
+      volStats[0].textContent = formatNumber(metrics.sigmaDaily * 100, 2) + ' %';
+      volStats[1].textContent = formatNumber(metrics.sigmaAnnual * 100, 2) + ' %';
+      volStats[2].textContent = formatNumber(impactResult.Y, 2);
+
+      impactStats[0].textContent = formatNumber(impactResult.r, 3);
+      impactStats[1].textContent =
+        (impactResult.impactPct > 0 ? '+' : '') + formatNumber(impactResult.impactPct, 2) + ' %';
+      impactStats[1].classList.remove('positive', 'negative');
+      impactStats[1].classList.add(impactResult.impactPct >= 0 ? 'positive' : 'negative');
+
+      impactStats[2].textContent = formatNumber(impactResult.expectedPrice, 3);
+
+      const directionText = impactResult.side === 'buy' ? '买入' : '卖出';
+      summaryLine.innerHTML =
+        '以 <strong>' +
+        directionText +
+        '</strong> 方式下单 <strong>' +
+        formatNumber(impactResult.Q, 0) +
+        ' 股</strong>，参与率 r ≈ <strong>' +
+        formatNumber(impactResult.r, 3) +
+        '</strong>，在 σ(日) ≈ <strong>' +
+        formatNumber(metrics.sigmaDaily * 100, 2) +
+        '%</strong>、Y ≈ <strong>' +
+        formatNumber(impactResult.Y, 2) +
+        '</strong> 的假设下，预估对价格的额外冲击约为 <strong>' +
+        (impactResult.impactPct > 0 ? '+' : '') +
+        formatNumber(impactResult.impactPct, 2) +
+        '%</strong>，理论成交价约为 <strong>' +
+        formatNumber(impactResult.expectedPrice, 3) +
+        '</strong>。';
+    }
+
+    function renderCharts(metrics, impactResult) {
+      const labels = metrics.items.map(d =>
+        d.date.toISOString().slice(5, 10)
+      );
+      const closes = metrics.items.map(d => d.close);
+      const volumes = metrics.items.map(d => d.volume);
+
+      const recentN = Math.min(90, labels.length);
+      const labelsRecent = labels.slice(-recentN);
+      const closesRecent = closes.slice(-recentN);
+      const volsRecent = volumes.slice(-recentN);
+
+      // 价格图
+      const priceCtx = document.getElementById('priceChart').getContext('2d');
+      destroyChart(priceChart);
+      priceChart = new Chart(priceCtx, {
+        type: 'line',
+        data: {
+          labels: labelsRecent,
+          datasets: [
+            {
+              label: '收盘价',
+              data: closesRecent,
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { maxTicksLimit: 5, color: 'rgba(148,163,184,0.7)' },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: 'rgba(148,163,184,0.7)' },
+              grid: { color: 'rgba(55,65,81,0.5)' }
+            }
+          }
+        }
+      });
+
+      // 成交量图
+      const adv = metrics.adv;
+      const advArray = new Array(volsRecent.length).fill(adv);
+      const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+      destroyChart(volumeChart);
+      volumeChart = new Chart(volumeCtx, {
+        type: 'bar',
+        data: {
+          labels: labelsRecent,
+          datasets: [
+            {
+              type: 'bar',
+              label: '成交量',
+              data: volsRecent,
+              borderWidth: 0
+            },
+            {
+              type: 'line',
+              label: 'ADV20',
+              data: advArray,
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0
+            }
+          ]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { maxTicksLimit: 5, color: 'rgba(148,163,184,0.7)' },
+              grid: { display: false }
+            },
+            y: {
+              ticks: { color: 'rgba(148,163,184,0.7)' },
+              grid: { color: 'rgba(55,65,81,0.5)' }
+            }
+          }
+        }
+      });
+
+      // Impact 曲线：Q 从 0.1×ADV 到 3×ADV
+      const curveLabels = [];
+      const curveData = [];
+      const Q0 = metrics.adv;
+      const Y = impactResult.Y;
+      for (const k of [0.1, 0.2, 0.5, 1, 2, 3]) {
+        const Qk = Q0 * k;
+        const Ik = Y * metrics.sigmaDaily * Math.sqrt(Qk / metrics.adv); // 正向冲击幅度
+        curveLabels.push((k * 100).toFixed(0) + '% ADV');
+        curveData.push(Ik * 100); // %
+      }
+
+      const impactCtx = document.getElementById('impactCurveChart').getContext('2d');
+      destroyChart(impactCurveChart);
+      impactCurveChart = new Chart(impactCtx, {
+        type: 'line',
+        data: {
+          labels: curveLabels,
+          datasets: [
+            {
+              label: 'Impact（%）',
+              data: curveData,
+              borderWidth: 2,
+              pointRadius: 3,
+              tension: 0.25
+            }
+          ]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: { color: 'rgba(148,163,184,0.7)' },
+              grid: { color: 'rgba(31,41,55,0.6)' }
+            },
+            y: {
+              ticks: { color: 'rgba(148,163,184,0.7)' },
+              grid: { color: 'rgba(31,41,55,0.6)' }
+            }
+          }
+        }
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+      const symbol = document.getElementById('symbolInput').value.trim();
+      const size = Number(document.getElementById('sizeInput').value);
+      let yInput = Number(document.getElementById('yInput').value);
+      if (!symbol) {
+        errorBox.textContent = '请输入股票代码。';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (!size || size <= 0) {
+        errorBox.textContent = '请输入有效的下单股数。';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (!yInput || yInput <= 0) {
+        yInput = 0.7;
+        document.getElementById('yInput').value = '0.7';
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '计算中…';
+
+      try {
+        const data = await fetchYahoo(symbol);
+        const metrics = computeMetrics(data);
+        const impactResult = computeImpact(metrics, size, side, yInput);
+        updateStats(metrics, impactResult);
+        renderCharts(metrics, impactResult);
+      } catch (err) {
+        console.error(err);
+        errorBox.textContent = '计算失败：' + err.message;
+        errorBox.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '计算 Impact';
+      }
+    });
+  </script>
+</body>
+</html>
