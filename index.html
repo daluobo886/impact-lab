@@ -9,68 +9,67 @@
 
   <style>
     :root {
-      --bg: #0b1020;
-      --card: #111624;
-      --border: #262b3a;
-      --accent: #3b82f6;
-      --accent-soft: rgba(59,130,246,0.1);
-      --text-main: #f9fafb;
-      --text-muted: #9ca3af;
-      --danger: #f97373;
-      --success: #4ade80;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --danger: #b91c1c;
+      --success: #15803d;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top left, #111827 0, #020617 45%, #020617 100%);
+      background: radial-gradient(circle at top left, #e5edff 0, #f9fafb 35%, #f3f4f6 100%);
       color: var(--text-main);
     }
     .app {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 24px 16px 40px;
+      padding: 28px 18px 40px;
     }
     header {
       display: flex;
-      align-items: baseline;
+      align-items: flex-end;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     header h1 {
-      font-size: 24px;
-      margin: 0;
-      letter-spacing: 0.06em;
+      font-size: 26px;
+      margin: 0 0 4px;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: #e5e7eb;
+      color: #111827;
     }
     header p {
       margin: 0;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-muted);
     }
     .grid {
       display: grid;
-      grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
-      gap: 16px;
+      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      gap: 18px;
     }
     @media (max-width: 900px) {
       .grid { grid-template-columns: minmax(0, 1fr); }
     }
     .card {
-      background: radial-gradient(circle at top, #111827 0, #020617 60%);
+      background: var(--card);
       border-radius: 18px;
       border: 1px solid var(--border);
       padding: 18px 18px 16px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.06);
     }
     .card h2 {
       margin: 0 0 12px;
       font-size: 16px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #e5e7eb;
+      color: #111827;
     }
     label {
       display: block;
@@ -80,17 +79,22 @@
     }
     input, select {
       width: 100%;
-      padding: 8px 10px;
+      padding: 9px 11px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(15,23,42,0.8);
+      background: #f9fafb;
       color: var(--text-main);
       font-size: 13px;
       outline: none;
     }
     input:focus, select:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(59,130,246,0.4);
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.25);
+      background: #ffffff;
+    }
+    input[disabled] {
+      background: #f9fafb;
+      color: var(--text-muted);
     }
     .row {
       display: flex;
@@ -102,7 +106,7 @@
       display: flex;
       border-radius: 999px;
       padding: 2px;
-      background: rgba(15,23,42,0.8);
+      background: #f3f4f6;
       border: 1px solid var(--border);
       font-size: 12px;
     }
@@ -111,34 +115,36 @@
       border: none;
       background: transparent;
       color: var(--text-muted);
-      padding: 5px 0;
+      padding: 6px 0;
       border-radius: 999px;
       cursor: pointer;
+      font-size: 12px;
     }
     .pill-toggle button.active {
       background: var(--accent);
-      color: #f9fafb;
+      color: #ffffff;
     }
     .btn-primary {
       width: 100%;
-      margin-top: 6px;
+      margin-top: 8px;
       border-radius: 999px;
       border: none;
-      padding: 9px 0;
-      font-size: 13px;
+      padding: 10px 0;
+      font-size: 14px;
       font-weight: 500;
       background: linear-gradient(135deg, #2563eb, #4f46e5);
       color: #f9fafb;
       cursor: pointer;
     }
     .btn-primary:disabled {
-      opacity: 0.6;
+      opacity: 0.7;
       cursor: default;
     }
     .hint {
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 6px;
+      line-height: 1.5;
     }
     .stat-grid {
       display: grid;
@@ -151,38 +157,41 @@
       border-radius: 14px;
       border: 1px solid var(--border);
       padding: 8px 10px;
-      background: rgba(15,23,42,0.9);
+      background: #f9fafb;
     }
     .stat-label {
       font-size: 11px;
       color: var(--text-muted);
     }
     .stat-value {
-      margin-top: 4px;
+      margin-top: 5px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
+      color: #111827;
     }
     .stat-value.positive { color: var(--success); }
     .stat-value.negative { color: var(--danger); }
     .section-title {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.13em;
+      letter-spacing: 0.14em;
       margin: 4px 0 4px;
     }
     .summary-line {
       font-size: 12px;
       color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.5;
     }
     .summary-line strong {
-      color: #e5e7eb;
-      font-weight: 500;
+      color: #111827;
+      font-weight: 600;
     }
     .charts-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      gap: 10px;
+      gap: 12px;
     }
     @media (max-width: 1100px) {
       .charts-grid { grid-template-columns: minmax(0, 1fr); }
@@ -190,6 +199,10 @@
     canvas {
       width: 100% !important;
       height: 260px !important;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
     }
     .error {
       margin-top: 6px;
@@ -202,9 +215,9 @@
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 10px;
-      background: rgba(34,197,94,0.12);
-      color: #bbf7d0;
-      border: 1px solid rgba(34,197,94,0.3);
+      background: #ecfdf3;
+      color: #166534;
+      border: 1px solid #bbf7d0;
       margin-left: 8px;
     }
   </style>
@@ -214,9 +227,11 @@
     <header>
       <div>
         <h1>IMPACT LAB · YAHOO 数据终端</h1>
-        <p>输入股票代码 + 下单规模，基于 σ / ADV / Y 系数预估冲击与涨跌幅（示意用）</p>
+        <p>输入股票代码 + 下单规模，基于 σ / ADV / 自动估算的 Y 系数预估冲击与涨跌幅（示意用）</p>
       </div>
-      <p>示例代码：AAPL · TSLA · 600036.SS · 000001.SZ</p>
+      <p style="font-size:12px;color:var(--text-muted);">
+        示例代码：AAPL · TSLA · 600036.SS · 000001.SZ
+      </p>
     </header>
 
     <div class="grid">
@@ -247,7 +262,7 @@
 
           <div class="row">
             <div>
-              <label for="yInput">Y 系数（经验冲击系数）</label>
+              <label for="yInput">Y 系数（自动估算，可手动修改）</label>
               <input id="yInput" type="number" step="0.1" min="0.1" max="3" value="0.7" />
             </div>
             <div>
@@ -258,7 +273,7 @@
 
           <button class="btn-primary" type="submit" id="submitBtn">计算 Impact</button>
           <div class="hint">
-            说明：Impact ≈ Y · σ(日) · √(Q / ADV)，结果为估算，不作为交易建议。
+            公式：Impact ≈ Y · σ(日) · √(Q / ADV)。Y 系数默认按历史收益率自动估算，你也可以在上方直接修改。
           </div>
           <div id="errorBox" class="error" style="display:none;"></div>
         </form>
@@ -274,7 +289,7 @@
         <div class="stat-grid" id="volStats">
           <div class="stat"><div class="stat-label">σ（日）</div><div class="stat-value">-</div></div>
           <div class="stat"><div class="stat-label">σ（年化）</div><div class="stat-value">-</div></div>
-          <div class="stat"><div class="stat-label">Y 系数</div><div class="stat-value">-</div></div>
+          <div class="stat"><div class="stat-label">Y 系数（当前 / 估算）</div><div class="stat-value">-</div></div>
         </div>
 
         <div class="section-title">本次订单 Impact 预估</div>
@@ -313,6 +328,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const errorBox = document.getElementById('errorBox');
     const sideToggle = document.getElementById('sideToggle');
+    const yInputEl = document.getElementById('yInput');
 
     let side = 'buy';
 
@@ -329,7 +345,7 @@
     let priceChart, volumeChart, impactCurveChart;
     function destroyChart(chart) { if (chart) chart.destroy(); }
 
-    // 通用：按顺序尝试多个 URL（直接 + 两个代理）
+    // 多代理：直接 + corsproxy + allorigins
     async function fetchWithProxies(targetUrl) {
       const candidates = [
         targetUrl,
@@ -408,13 +424,18 @@
       const sigmaDaily = Math.sqrt(varR);
       const sigmaAnnual = sigmaDaily * Math.sqrt(252);
 
+      // 估算 Y：用 |r| 的均值 / σ，夹在 [0.3, 1.5] 区间
+      let avgAbsR = returns.reduce((a, b) => a + Math.abs(b), 0) / returns.length;
+      let yEstimated = (sigmaDaily > 0) ? avgAbsR / sigmaDaily : 0.7;
+      if (!isFinite(yEstimated) || yEstimated <= 0) yEstimated = 0.7;
+      yEstimated = Math.min(Math.max(yEstimated, 0.3), 1.5);
+
       // ADV：最近 20 日平均成交量
       const advWindow = Math.min(20, vols.length);
       const volsTail = vols.slice(-advWindow);
       const adv = volsTail.reduce((a, b) => a + b, 0) / advWindow;
 
       const last = items[items.length - 1];
-      const yDefault = 0.7;
 
       return {
         items,
@@ -426,7 +447,7 @@
         lastPrice: last.close,
         lastDate: last.date,
         lastVolume: last.volume,
-        yDefault
+        yEstimated
       };
     }
 
@@ -434,7 +455,7 @@
       const Q = orderSize;
       const V = metrics.adv;
       const r = Q / V;
-      const Y = yInput || metrics.yDefault;
+      const Y = yInput || metrics.yEstimated;
       const impact = Y * metrics.sigmaDaily * Math.sqrt(Q / V);
       const sign = side === 'buy' ? 1 : -1;
       const impactPct = impact * 100 * sign;
@@ -464,7 +485,11 @@
 
       volStats[0].textContent = formatNumber(metrics.sigmaDaily * 100, 2) + ' %';
       volStats[1].textContent = formatNumber(metrics.sigmaAnnual * 100, 2) + ' %';
-      volStats[2].textContent = formatNumber(impactResult.Y, 2);
+      volStats[2].textContent =
+        formatNumber(impactResult.Y, 2) +
+        '（估算值 ≈ ' +
+        formatNumber(metrics.yEstimated, 2) +
+        '）';
 
       impactStats[0].textContent = formatNumber(impactResult.r, 3);
       impactStats[1].textContent =
@@ -482,11 +507,13 @@
         formatNumber(impactResult.Q, 0) +
         ' 股</strong>，参与率 r ≈ <strong>' +
         formatNumber(impactResult.r, 3) +
-        '</strong>，在 σ(日) ≈ <strong>' +
+        '</strong>。根据最近 60 日波动率 σ(日) ≈ <strong>' +
         formatNumber(metrics.sigmaDaily * 100, 2) +
-        '%</strong>、Y ≈ <strong>' +
+        '%</strong>，自动估算的 Y ≈ <strong>' +
+        formatNumber(metrics.yEstimated, 2) +
+        '</strong>，当前使用 Y ≈ <strong>' +
         formatNumber(impactResult.Y, 2) +
-        '</strong> 的假设下，预估对价格的额外冲击约为 <strong>' +
+        '</strong>，预估对价格的额外冲击约为 <strong>' +
         (impactResult.impactPct > 0 ? '+' : '') +
         formatNumber(impactResult.impactPct, 2) +
         '%</strong>，理论成交价约为 <strong>' +
@@ -525,12 +552,12 @@
           plugins: { legend: { display: false } },
           scales: {
             x: {
-              ticks: { maxTicksLimit: 5, color: 'rgba(148,163,184,0.7)' },
+              ticks: { maxTicksLimit: 5, color: 'rgba(75,85,99,0.9)' },
               grid: { display: false }
             },
             y: {
-              ticks: { color: 'rgba(148,163,184,0.7)' },
-              grid: { color: 'rgba(55,65,81,0.5)' }
+              ticks: { color: 'rgba(75,85,99,0.9)' },
+              grid: { color: 'rgba(209,213,219,0.8)' }
             }
           }
         }
@@ -566,12 +593,12 @@
           plugins: { legend: { display: false } },
           scales: {
             x: {
-              ticks: { maxTicksLimit: 5, color: 'rgba(148,163,184,0.7)' },
+              ticks: { maxTicksLimit: 5, color: 'rgba(75,85,99,0.9)' },
               grid: { display: false }
             },
             y: {
-              ticks: { color: 'rgba(148,163,184,0.7)' },
-              grid: { color: 'rgba(55,65,81,0.5)' }
+              ticks: { color: 'rgba(75,85,99,0.9)' },
+              grid: { color: 'rgba(209,213,219,0.8)' }
             }
           }
         }
@@ -609,12 +636,12 @@
           plugins: { legend: { display: false } },
           scales: {
             x: {
-              ticks: { color: 'rgba(148,163,184,0.7)' },
-              grid: { color: 'rgba(31,41,55,0.6)' }
+              ticks: { color: 'rgba(75,85,99,0.9)' },
+              grid: { color: 'rgba(209,213,219,0.8)' }
             },
             y: {
-              ticks: { color: 'rgba(148,163,184,0.7)' },
-              grid: { color: 'rgba(31,41,55,0.6)' }
+              ticks: { color: 'rgba(75,85,99,0.9)' },
+              grid: { color: 'rgba(209,213,219,0.8)' }
             }
           }
         }
@@ -627,7 +654,7 @@
       errorBox.textContent = '';
       const symbol = document.getElementById('symbolInput').value.trim();
       const size = Number(document.getElementById('sizeInput').value);
-      let yInput = Number(document.getElementById('yInput').value);
+      let yInput = Number(yInputEl.value);
       if (!symbol) {
         errorBox.textContent = '请输入股票代码。';
         errorBox.style.display = 'block';
@@ -639,8 +666,7 @@
         return;
       }
       if (!yInput || yInput <= 0) {
-        yInput = 0.7;
-        document.getElementById('yInput').value = '0.7';
+        yInput = NaN; // 用 NaN 触发后面用估算值
       }
 
       submitBtn.disabled = true;
@@ -649,7 +675,17 @@
       try {
         const data = await fetchYahoo(symbol);
         const metrics = computeMetrics(data);
-        const impactResult = computeImpact(metrics, size, side, yInput);
+
+        // 把自动估算的 Y 写回输入框作为默认值（用户可再改）
+        if (!isFinite(Number(yInputEl.value)) || Number(yInputEl.value) <= 0) {
+          yInputEl.value = metrics.yEstimated.toFixed(2);
+        }
+
+        const actualY = isFinite(Number(yInputEl.value)) && Number(yInputEl.value) > 0
+          ? Number(yInputEl.value)
+          : metrics.yEstimated;
+
+        const impactResult = computeImpact(metrics, size, side, actualY);
         updateStats(metrics, impactResult);
         renderCharts(metrics, impactResult);
       } catch (err) {
