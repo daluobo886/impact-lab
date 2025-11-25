@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>Market Impact 预估实验室</title>
+  <title>Impact Lab · YAHOO 数据终端</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -213,7 +213,7 @@
   <div class="app">
     <header>
       <div>
-        <h1>Impact Lab · YAHOO 数据终端</h1>
+        <h1>IMPACT LAB · YAHOO 数据终端</h1>
         <p>输入股票代码 + 下单规模，基于 σ / ADV / Y 系数预估冲击与涨跌幅（示意用）</p>
       </div>
       <p>示例代码：AAPL · TSLA · 600036.SS · 000001.SZ</p>
@@ -258,7 +258,7 @@
 
           <button class="btn-primary" type="submit" id="submitBtn">计算 Impact</button>
           <div class="hint">
-            说明：Impact ≈ Y · σ(日) · √(Q / ADV)。结果为估算，不作为交易建议。
+            说明：Impact ≈ Y · σ(日) · √(Q / ADV)，结果为估算，不作为交易建议。
           </div>
           <div id="errorBox" class="error" style="display:none;"></div>
         </form>
@@ -291,7 +291,7 @@
 
       <!-- 右侧：可视化 -->
       <div class="card">
-        <h2>可视化面板<span class="badge">Experimental</span></h2>
+        <h2>可视化面板<span class="badge">EXPERIMENTAL</span></h2>
         <div class="charts-grid">
           <div>
             <div class="section-title">价格历史（最近 90 日）</div>
@@ -332,11 +332,15 @@
       if (chart) chart.destroy();
     }
 
+    // 使用 corsproxy.io 解决 CORS
     async function fetchYahoo(symbol) {
-      const url =
+      const target =
         'https://query1.finance.yahoo.com/v8/finance/chart/' +
         encodeURIComponent(symbol) +
         '?range=6mo&interval=1d&includePrePost=false&events=div,splits';
+
+      const url = 'https://corsproxy.io/?url=' + encodeURIComponent(target);
+
       const resp = await fetch(url);
       if (!resp.ok) {
         throw new Error('HTTP ' + resp.status + ' 获取失败');
@@ -395,7 +399,6 @@
 
       const last = items[items.length - 1];
 
-      // 默认 Y 系数：0.7（你可以在页面上手动调整）
       const yDefault = 0.7;
 
       return {
@@ -417,7 +420,6 @@
       const V = metrics.adv;
       const r = Q / V;
       const Y = yInput || metrics.yDefault;
-      // 经典平方根冲击：Impact ≈ Y · σ · √(Q/V)
       const impact = Y * metrics.sigmaDaily * Math.sqrt(Q / V);
       const sign = side === 'buy' ? 1 : -1;
       const impactPct = impact * 100 * sign;
@@ -569,9 +571,9 @@
       const Y = impactResult.Y;
       for (const k of [0.1, 0.2, 0.5, 1, 2, 3]) {
         const Qk = Q0 * k;
-        const Ik = Y * metrics.sigmaDaily * Math.sqrt(Qk / metrics.adv); // 正向冲击幅度
+        const Ik = Y * metrics.sigmaDaily * Math.sqrt(Qk / metrics.adv);
         curveLabels.push((k * 100).toFixed(0) + '% ADV');
-        curveData.push(Ik * 100); // %
+        curveData.push(Ik * 100);
       }
 
       const impactCtx = document.getElementById('impactCurveChart').getContext('2d');
